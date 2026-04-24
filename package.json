@@ -1,0 +1,61 @@
+{
+  "name": "@useknockout/react",
+  "version": "0.0.1",
+  "description": "React hooks for useknockout — state-of-the-art background removal API.",
+  "keywords": [
+    "background-removal",
+    "remove-background",
+    "react",
+    "react-hooks",
+    "birefnet",
+    "ai",
+    "image-processing",
+    "useknockout"
+  ],
+  "homepage": "https://github.com/useknockout/react",
+  "bugs": {
+    "url": "https://github.com/useknockout/react/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/useknockout/react.git"
+  },
+  "license": "MIT",
+  "author": "useknockout",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "npm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "react": "^18.3.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
