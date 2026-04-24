@@ -1,6 +1,30 @@
-# @useknockout/react
+<div align="center">
 
-> React hooks for [useknockout](https://github.com/useknockout/api) — state-of-the-art background removal API.
+  # 🥊 @useknockout/react
+
+  **React hooks for [useknockout](https://github.com/useknockout/api) — state-of-the-art background removal API.**
+
+  [![MIT License](https://img.shields.io/badge/license-MIT-3da639)](./LICENSE)
+  [![npm version](https://img.shields.io/npm/v/@useknockout/react?color=cb3837)](https://www.npmjs.com/package/@useknockout/react)
+  [![npm downloads](https://img.shields.io/npm/dm/@useknockout/react?color=cb3837)](https://www.npmjs.com/package/@useknockout/react)
+  [![GitHub stars](https://img.shields.io/github/stars/useknockout/react?style=social)](https://github.com/useknockout/react)
+  [![React](https://img.shields.io/badge/React-%E2%89%A518-61dafb?logo=react&logoColor=white)](https://react.dev)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Zero deps](https://img.shields.io/badge/runtime%20deps-0-success)](./package.json)
+
+  [**Install**](#install) · [**Quick Start**](#quick-start) · [**Hooks**](#hooks) · [**Provider**](#knockoutprovider) · [**API repo**](https://github.com/useknockout/api)
+
+  <br/>
+
+  <img src="https://raw.githubusercontent.com/useknockout/api/main/docs/hero.png" alt="useknockout before/after — background removal demo" width="800"/>
+
+  <br/>
+
+  *Drop-in hooks. Works with Next, Remix, Vite. Zero deps.*
+
+</div>
+
+---
 
 - **Drop-in hooks** — `useRemoveBackground`, `useReplaceBackground`
 - **Zero runtime dependencies** — uses global `fetch` + `FormData`
