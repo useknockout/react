@@ -25,6 +25,55 @@ export interface ReplaceBackgroundInput {
   format?: OpaqueFormat;
 }
 
+export interface HeadshotInput {
+  file: File | Blob;
+  bgColor?: string;
+  bgBlur?: boolean;
+  blurRadius?: number;
+  /** Output aspect "W:H". Default "4:5" portrait. */
+  aspect?: string;
+  padding?: number;
+  /** Vertical headroom 0–0.5. Default 0.18. */
+  headTopRatio?: number;
+  format?: OpaqueFormat;
+}
+
+export interface PreviewInput {
+  file: File | Blob;
+  /** Long-edge cap 64–1024. Default 512. */
+  maxDim?: number;
+  format?: OutputFormat;
+}
+
+export interface EstimateInput {
+  endpoint: string;
+  width: number;
+  height: number;
+}
+
+export interface EstimateResponse {
+  endpoint: string;
+  image_pixels: number;
+  est_latency_ms_warm: number;
+  est_latency_ms_cold: number;
+  est_cost_usd: number;
+  free_during_beta: boolean;
+  note: string;
+}
+
+export interface StatsDay {
+  date: string;
+  count: number;
+}
+
+export interface StatsResponse {
+  total_processed: number;
+  today: number;
+  last_7_days: StatsDay[];
+  error?: string;
+  detail?: string;
+}
+
 export class KnockoutError extends Error {
   public readonly status: number;
   public readonly code:
@@ -147,4 +196,75 @@ export async function callHealth(
   const body = await res.text();
   if (!res.ok) throw new KnockoutError(res.status, body);
   return JSON.parse(body);
+}
+
+/**
+ * Public usage counter — total + today + 7-day breakdown.
+ */
+export async function callStats(config: KnockoutConfig): Promise<StatsResponse> {
+  const res = await request(config, "/stats", { method: "GET" });
+  const body = await res.text();
+  if (!res.ok) throw new KnockoutError(res.status, body);
+  return JSON.parse(body) as StatsResponse;
+}
+
+/**
+ * Predict latency + cost for an endpoint and image size. No GPU work.
+ */
+export async function callEstimate(
+  config: KnockoutConfig,
+  input: EstimateInput
+): Promise<EstimateResponse> {
+  const res = await request(config, "/estimate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      endpoint: input.endpoint,
+      width: input.width,
+      height: input.height,
+    }),
+  });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return (await res.json()) as EstimateResponse;
+}
+
+/**
+ * LinkedIn-ready headshot — bg removal + portrait crop + center subject + bg color or blur.
+ */
+export async function callHeadshot(
+  config: KnockoutConfig,
+  input: HeadshotInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  if (input.bgColor) form.append("bg_color", input.bgColor);
+  if (input.bgBlur !== undefined) form.append("bg_blur", input.bgBlur ? "true" : "false");
+  if (input.blurRadius !== undefined) form.append("blur_radius", String(input.blurRadius));
+  if (input.aspect) form.append("aspect", input.aspect);
+  if (input.padding !== undefined) form.append("padding", String(input.padding));
+  if (input.headTopRatio !== undefined) form.append("head_top_ratio", String(input.headTopRatio));
+  form.append("format", input.format ?? "jpg");
+
+  const res = await request(config, "/headshot", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * Fast low-res preview cutout (~80ms warm). Skips refinement, downscales input.
+ */
+export async function callPreview(
+  config: KnockoutConfig,
+  input: PreviewInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  form.append("max_dim", String(input.maxDim ?? 512));
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/preview", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
 }
