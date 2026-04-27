@@ -32,6 +32,20 @@ export type {
 export { useStats } from "./useStats";
 export type { UseStatsOptions, UseStatsResult } from "./useStats";
 
+export { useUpscale } from "./useUpscale";
+export type {
+  UseUpscaleOptions,
+  UseUpscaleResult,
+  UpscaleOptions,
+} from "./useUpscale";
+
+export { useFaceRestore } from "./useFaceRestore";
+export type {
+  UseFaceRestoreOptions,
+  UseFaceRestoreResult,
+  FaceRestoreOptions,
+} from "./useFaceRestore";
+
 export {
   DEFAULT_BASE_URL,
   KnockoutError,
@@ -42,6 +56,8 @@ export {
   callEstimate,
   callHeadshot,
   callPreview,
+  callUpscale,
+  callFaceRestore,
 } from "./client";
 export type {
   KnockoutConfig,
@@ -54,4 +70,6 @@ export type {
   EstimateResponse,
   StatsResponse,
   StatsDay,
+  UpscaleInput,
+  FaceRestoreInput,
 } from "./client";

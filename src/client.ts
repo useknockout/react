@@ -45,6 +45,22 @@ export interface PreviewInput {
   format?: OutputFormat;
 }
 
+export interface UpscaleInput {
+  file: File | Blob;
+  /** 2 or 4. Default 4. */
+  scale?: 2 | 4;
+  /** Route through GFPGAN for sharper facial detail (slower). */
+  faceEnhance?: boolean;
+  format?: OpaqueFormat;
+}
+
+export interface FaceRestoreInput {
+  file: File | Blob;
+  /** Restore only the most prominent face (faster). */
+  onlyCenterFace?: boolean;
+  format?: OpaqueFormat;
+}
+
 export interface EstimateInput {
   endpoint: string;
   width: number;
@@ -265,6 +281,47 @@ export async function callPreview(
   form.append("format", input.format ?? "png");
 
   const res = await request(config, "/preview", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * Real-ESRGAN x2 / x4 super-resolution.
+ */
+export async function callUpscale(
+  config: KnockoutConfig,
+  input: UpscaleInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  form.append("scale", String(input.scale ?? 4));
+  if (input.faceEnhance !== undefined) {
+    form.append("face_enhance", input.faceEnhance ? "true" : "false");
+  }
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/upscale", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * GFPGAN portrait restoration.
+ */
+export async function callFaceRestore(
+  config: KnockoutConfig,
+  input: FaceRestoreInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  if (input.onlyCenterFace !== undefined) {
+    form.append("only_center_face", input.onlyCenterFace ? "true" : "false");
+  }
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/face-restore", { method: "POST", body: form });
   if (!res.ok) throw new KnockoutError(res.status, await res.text());
   return await res.blob();
 }
