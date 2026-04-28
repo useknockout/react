@@ -165,6 +165,65 @@ Removes the background and composites the subject onto a new background.
 | `bgUrl` | `string?` | Remote URL of a background image. |
 | `format` | `"png" \| "webp" \| "jpg"?` | Per-call override. |
 
+### `useHeadshot(options?)` — v0.4.0
+
+Studio-quality professional headshot — background removed, neutral studio backdrop, optional drop shadow, smart bust crop.
+
+```tsx
+const { headshot, dataUrl, isLoading } = useHeadshot();
+
+await headshot({ file, bgColor: "#f5f5f5", crop: "bust" });
+```
+
+**`input` shape:** `{ file, bgColor?, addShadow?, crop?: "bust" | "head" | "full", format? }`
+
+### `usePreview(options?)` — v0.4.0
+
+Cheap, fast low-res preview (~1.5s, 512px max). Use for thumbnail UI before triggering full-res request.
+
+```tsx
+const { preview, dataUrl, isLoading } = usePreview();
+
+await preview({ file, maxSize: 512, watermark: false });
+```
+
+### `useStats(options?)` — v0.4.0
+
+Public usage stats — total images processed, last 24h, 7-day trend. No auth required.
+
+```tsx
+const { stats, data, isLoading } = useStats();
+
+useEffect(() => { stats(); }, []);
+// data → { total, last_24h, last_7d }
+```
+
+### `useUpscale(options?)` — v0.5.0
+
+**Real-ESRGAN x2/x4 super-resolution.** Outputs 2x or 4x larger image with AI-restored detail.
+
+```tsx
+const { upscale, dataUrl, isLoading } = useUpscale();
+
+await upscale({ file, scale: 4 });
+```
+
+**`input` shape:** `{ file, scale?: 2 | 4, format?: "png" | "webp" | "jpg" }`
+
+### `useFaceRestore(options?)` — v0.5.0
+
+**GFPGAN v1.4 face restoration.** Restores blurred/compressed faces while preserving identity. Multi-face safe; background also upscaled.
+
+```tsx
+const { faceRestore, dataUrl, isLoading } = useFaceRestore();
+
+await faceRestore({ file });
+```
+
+**`input` shape:** `{ file, format?: "png" | "webp" | "jpg" }`
+
+All hooks return `{ data, dataUrl, isLoading, error, reset }` plus the trigger function above.
+
 ---
 
 ## `KnockoutProvider`
