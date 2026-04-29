@@ -49,7 +49,12 @@ export interface UpscaleInput {
   file: File | Blob;
   /** 2 or 4. Default 4. */
   scale?: 2 | 4;
-  /** Route through GFPGAN for sharper facial detail (slower). */
+  /**
+   * Backend. `swin2sr` (default, v0.6.0+) is sharper on real photos.
+   * `realesrgan` is the legacy backend — better on anime / illustrations.
+   */
+  model?: "swin2sr" | "realesrgan";
+  /** Route through GFPGAN for sharper facial detail (slower). Implies realesrgan. */
   faceEnhance?: boolean;
   format?: OpaqueFormat;
 }
@@ -286,7 +291,7 @@ export async function callPreview(
 }
 
 /**
- * Real-ESRGAN x2 / x4 super-resolution.
+ * 2x / 4x super-resolution. Default backend Swin2SR; pass model="realesrgan" for legacy.
  */
 export async function callUpscale(
   config: KnockoutConfig,
@@ -296,6 +301,7 @@ export async function callUpscale(
   const filename = input.file instanceof File ? input.file.name : "image";
   form.append("file", input.file, filename);
   form.append("scale", String(input.scale ?? 4));
+  form.append("model", input.model ?? "swin2sr");
   if (input.faceEnhance !== undefined) {
     form.append("face_enhance", input.faceEnhance ? "true" : "false");
   }

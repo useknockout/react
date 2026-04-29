@@ -198,17 +198,18 @@ useEffect(() => { stats(); }, []);
 // data → { total, last_24h, last_7d }
 ```
 
-### `useUpscale(options?)` — v0.5.0
+### `useUpscale(options?)` — v0.6.0
 
-**Real-ESRGAN x2/x4 super-resolution.** Outputs 2x or 4x larger image with AI-restored detail.
+**Swin2SR / Real-ESRGAN x2/x4 super-resolution.** Defaults to **Swin2SR** (SwinV2 Transformer) — sharper detail and natural texture on real photos. Pass `model: "realesrgan"` for the legacy backend (better on anime / illustrations).
 
 ```tsx
 const { upscale, dataUrl, isLoading } = useUpscale();
 
 await upscale({ file, scale: 4 });
+await upscale({ file, scale: 4, model: "realesrgan" });
 ```
 
-**`input` shape:** `{ file, scale?: 2 | 4, format?: "png" | "webp" | "jpg" }`
+**`input` shape:** `{ file, scale?: 2 | 4, model?: "swin2sr" | "realesrgan", format?: "png" | "webp" | "jpg" }`
 
 ### `useFaceRestore(options?)` — v0.5.0
 
