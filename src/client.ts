@@ -66,6 +66,11 @@ export interface FaceRestoreInput {
   format?: OpaqueFormat;
 }
 
+export interface ColorizeInput {
+  file: File | Blob;
+  format?: OpaqueFormat;
+}
+
 export interface EstimateInput {
   endpoint: string;
   width: number;
@@ -328,6 +333,24 @@ export async function callFaceRestore(
   form.append("format", input.format ?? "png");
 
   const res = await request(config, "/face-restore", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * DDColor (Apache-2.0) — predicts plausible color from grayscale luminance.
+ * Single feed-forward, ~500ms warm. Works on B&W or color input.
+ */
+export async function callColorize(
+  config: KnockoutConfig,
+  input: ColorizeInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/colorize", { method: "POST", body: form });
   if (!res.ok) throw new KnockoutError(res.status, await res.text());
   return await res.blob();
 }

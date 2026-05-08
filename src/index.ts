@@ -46,6 +46,13 @@ export type {
   FaceRestoreOptions,
 } from "./useFaceRestore";
 
+export { useColorize } from "./useColorize";
+export type {
+  UseColorizeOptions,
+  UseColorizeResult,
+  ColorizeOptions,
+} from "./useColorize";
+
 export {
   DEFAULT_BASE_URL,
   KnockoutError,
@@ -58,6 +65,7 @@ export {
   callPreview,
   callUpscale,
   callFaceRestore,
+  callColorize,
 } from "./client";
 export type {
   KnockoutConfig,
@@ -72,4 +80,5 @@ export type {
   StatsDay,
   UpscaleInput,
   FaceRestoreInput,
+  ColorizeInput,
 } from "./client";
