@@ -53,6 +53,13 @@ export type {
   ColorizeOptions,
 } from "./useColorize";
 
+export { useSilhouette } from "./useSilhouette";
+export type {
+  UseSilhouetteOptions,
+  UseSilhouetteResult,
+  SilhouetteOptions,
+} from "./useSilhouette";
+
 export {
   DEFAULT_BASE_URL,
   KnockoutError,
@@ -66,6 +73,7 @@ export {
   callUpscale,
   callFaceRestore,
   callColorize,
+  callSilhouette,
 } from "./client";
 export type {
   KnockoutConfig,
@@ -81,4 +89,5 @@ export type {
   UpscaleInput,
   FaceRestoreInput,
   ColorizeInput,
+  SilhouetteInput,
 } from "./client";

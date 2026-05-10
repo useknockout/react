@@ -71,6 +71,15 @@ export interface ColorizeInput {
   format?: OpaqueFormat;
 }
 
+export interface SilhouetteInput {
+  file: File | Blob;
+  /** Hex color for the subject silhouette. Default "#7C3AED". */
+  subjectColor?: string;
+  /** Hex color for the background. Default "#FFFFFF". */
+  bgColor?: string;
+  format?: OpaqueFormat;
+}
+
 export interface EstimateInput {
   endpoint: string;
   width: number;
@@ -351,6 +360,25 @@ export async function callColorize(
   form.append("format", input.format ?? "png");
 
   const res = await request(config, "/colorize", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * Two-tone silhouette portrait — subject in one solid color, bg in another.
+ */
+export async function callSilhouette(
+  config: KnockoutConfig,
+  input: SilhouetteInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  if (input.subjectColor) form.append("subject_color", input.subjectColor);
+  if (input.bgColor) form.append("bg_color", input.bgColor);
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/silhouette", { method: "POST", body: form });
   if (!res.ok) throw new KnockoutError(res.status, await res.text());
   return await res.blob();
 }
