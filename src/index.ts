@@ -60,6 +60,13 @@ export type {
   SilhouetteOptions,
 } from "./useSilhouette";
 
+export { useInpaint } from "./useInpaint";
+export type {
+  UseInpaintOptions,
+  UseInpaintResult,
+  InpaintOptions,
+} from "./useInpaint";
+
 export {
   DEFAULT_BASE_URL,
   KnockoutError,
@@ -74,6 +81,7 @@ export {
   callFaceRestore,
   callColorize,
   callSilhouette,
+  callInpaint,
 } from "./client";
 export type {
   KnockoutConfig,
@@ -90,4 +98,6 @@ export type {
   FaceRestoreInput,
   ColorizeInput,
   SilhouetteInput,
+  InpaintInput,
+  InpaintBbox,
 } from "./client";

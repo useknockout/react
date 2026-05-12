@@ -80,6 +80,28 @@ export interface SilhouetteInput {
   format?: OpaqueFormat;
 }
 
+export interface InpaintBbox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface InpaintInput {
+  file: File | Blob;
+  /**
+   * Optional mask. White pixels = inpaint, black = keep. If omitted (and
+   * no `bbox`), auto-subject mode runs BiRefNet and inverts the subject
+   * mask — drop in a photo, get the subject erased.
+   */
+  mask?: File | Blob;
+  /** Rectangular region to inpaint. Mutually exclusive with `mask`. */
+  bbox?: InpaintBbox;
+  /** Mask dilation in pixels. Default 8, range 0..32. */
+  dilation?: number;
+  format?: OpaqueFormat;
+}
+
 export interface EstimateInput {
   endpoint: string;
   width: number;
@@ -360,6 +382,34 @@ export async function callColorize(
   form.append("format", input.format ?? "png");
 
   const res = await request(config, "/colorize", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * LaMa-based inpainting. Three modes auto-detected from what's passed.
+ */
+export async function callInpaint(
+  config: KnockoutConfig,
+  input: InpaintInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  if (input.mask) {
+    const maskName = input.mask instanceof File ? input.mask.name : "mask.png";
+    form.append("mask", input.mask, maskName);
+  }
+  if (input.bbox) {
+    form.append("x", String(input.bbox.x));
+    form.append("y", String(input.bbox.y));
+    form.append("w", String(input.bbox.w));
+    form.append("h", String(input.bbox.h));
+  }
+  if (input.dilation !== undefined) form.append("dilation", String(input.dilation));
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/inpaint", { method: "POST", body: form });
   if (!res.ok) throw new KnockoutError(res.status, await res.text());
   return await res.blob();
 }
