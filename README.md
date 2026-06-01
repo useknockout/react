@@ -223,6 +223,74 @@ await faceRestore({ file });
 
 **`input` shape:** `{ file, format?: "png" | "webp" | "jpg" }`
 
+### `useStudioShot(options?)` — v0.3.0
+
+**E-commerce product preset** — cutout, centered on a canvas, optional drop shadow, standardized aspect. Pass `transparent: true` for a transparent-background PNG.
+
+```tsx
+const { generate, dataUrl, isLoading } = useStudioShot();
+
+await generate(file, { aspect: "1:1" });
+await generate(file, { transparent: true }); // transparent PNG
+```
+
+**`generate(file, options?)`** — `{ bgColor?, aspect?, padding?, shadow?, transparent?, format?: "png" | "webp" | "jpg" }`
+
+### `useSmartCrop(options?)` — v0.3.0
+
+**Auto-crop to the subject bounding box + padding.** Transparent cutout by default.
+
+```tsx
+const { generate, dataUrl, isLoading } = useSmartCrop();
+await generate(file, { padding: 32 });
+```
+
+**`generate(file, options?)`** — `{ padding?, transparent?, format?: "png" | "webp" | "jpg" }`
+
+### `useSticker(options?)` — v0.3.0
+
+**Sticker** — thick contour outline around the subject on a transparent bg (iMessage / WhatsApp style).
+
+```tsx
+const { generate, dataUrl, isLoading } = useSticker();
+await generate(file, { strokeWidth: 24 });
+```
+
+**`generate(file, options?)`** — `{ strokeColor?, strokeWidth?, format?: "png" | "webp" }`
+
+### `useOutline(options?)` — v0.3.0
+
+**Outline** — thin stroke around the subject on a transparent bg.
+
+```tsx
+const { generate, dataUrl, isLoading } = useOutline();
+await generate(file, { outlineColor: "#000000", outlineWidth: 4 });
+```
+
+**`generate(file, options?)`** — `{ outlineColor?, outlineWidth?, format?: "png" | "webp" }`
+
+### `useCompare(options?)` — v0.3.0
+
+**Before/after side-by-side** — original on the left, cutout (on a checkerboard) on the right. Great for marketing screenshots.
+
+```tsx
+const { generate, dataUrl, isLoading } = useCompare();
+await generate(file);
+```
+
+**`generate(file, options?)`** — `{ format?: "png" | "webp" }`
+
+### `useMask(options?)` — v0.3.0
+
+**Black/white subject mask** for your own compositing pipeline.
+
+```tsx
+const { generate, dataUrl, isLoading } = useMask();
+await generate(file);
+```
+
+**`generate(file, options?)`** — `{ format?: "png" | "webp" }`
+
 All hooks return `{ data, dataUrl, isLoading, error, reset }` plus the trigger function above.
 
 ---

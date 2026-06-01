@@ -131,6 +131,55 @@ export interface StatsResponse {
   detail?: string;
 }
 
+export interface StudioShotInput {
+  file: File | Blob;
+  bgColor?: string;
+  /** Output aspect "W:H". Default "1:1". */
+  aspect?: string;
+  padding?: number;
+  shadow?: boolean;
+  /** Keep a transparent background. Ignores bgColor & shadow; output is PNG (jpg coerced). */
+  transparent?: boolean;
+  format?: OpaqueFormat;
+}
+
+export interface SmartCropInput {
+  file: File | Blob;
+  /** Padding around the subject bbox, in pixels. Default 24. */
+  padding?: number;
+  /** Transparent cutout (true) or cropped region from the original (false). Default true. */
+  transparent?: boolean;
+  format?: OpaqueFormat;
+}
+
+export interface StickerInput {
+  file: File | Blob;
+  /** Hex color for the outline. Default "#FFFFFF". */
+  strokeColor?: string;
+  /** Outline width in pixels. Default 20. */
+  strokeWidth?: number;
+  format?: OutputFormat;
+}
+
+export interface OutlineInput {
+  file: File | Blob;
+  /** Hex color for the outline. Default "#000000". */
+  outlineColor?: string;
+  /** Outline width in pixels. Default 4. */
+  outlineWidth?: number;
+  format?: OutputFormat;
+}
+
+export interface CompareInput {
+  file: File | Blob;
+  format?: OutputFormat;
+}
+
+export interface MaskInput {
+  file: File | Blob;
+  format?: OutputFormat;
+}
+
 export class KnockoutError extends Error {
   public readonly status: number;
   public readonly code:
@@ -429,6 +478,122 @@ export async function callSilhouette(
   form.append("format", input.format ?? "png");
 
   const res = await request(config, "/silhouette", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * E-commerce preset — cutout + centered on canvas + optional drop shadow + aspect crop.
+ * Pass `transparent: true` for a transparent-background PNG (bgColor & shadow ignored).
+ */
+export async function callStudioShot(
+  config: KnockoutConfig,
+  input: StudioShotInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  if (input.bgColor) form.append("bg_color", input.bgColor);
+  if (input.aspect) form.append("aspect", input.aspect);
+  if (input.padding !== undefined) form.append("padding", String(input.padding));
+  if (input.shadow !== undefined) form.append("shadow", input.shadow ? "true" : "false");
+  if (input.transparent !== undefined) {
+    form.append("transparent", input.transparent ? "true" : "false");
+  }
+  form.append("format", input.format ?? "jpg");
+
+  const res = await request(config, "/studio-shot", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * Auto-crop to the subject bounding box + padding. Transparent cutout by default.
+ */
+export async function callSmartCrop(
+  config: KnockoutConfig,
+  input: SmartCropInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  form.append("padding", String(input.padding ?? 24));
+  form.append("transparent", (input.transparent ?? true) ? "true" : "false");
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/smart-crop", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * Sticker — thick contour outline around the subject on a transparent bg (iMessage style).
+ */
+export async function callSticker(
+  config: KnockoutConfig,
+  input: StickerInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  if (input.strokeColor) form.append("stroke_color", input.strokeColor);
+  if (input.strokeWidth !== undefined) form.append("stroke_width", String(input.strokeWidth));
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/sticker", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * Outline — thin stroke around the subject on a transparent bg.
+ */
+export async function callOutline(
+  config: KnockoutConfig,
+  input: OutlineInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  if (input.outlineColor) form.append("outline_color", input.outlineColor);
+  if (input.outlineWidth !== undefined) form.append("outline_width", String(input.outlineWidth));
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/outline", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * Before/after side-by-side preview — original on the left, cutout (on a checkerboard) on the right.
+ */
+export async function callCompare(
+  config: KnockoutConfig,
+  input: CompareInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/compare", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * Just the black/white subject mask, for your own compositing pipeline.
+ */
+export async function callMask(
+  config: KnockoutConfig,
+  input: MaskInput
+): Promise<Blob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "image";
+  form.append("file", input.file, filename);
+  form.append("format", input.format ?? "png");
+
+  const res = await request(config, "/mask", { method: "POST", body: form });
   if (!res.ok) throw new KnockoutError(res.status, await res.text());
   return await res.blob();
 }

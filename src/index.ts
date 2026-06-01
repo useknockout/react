@@ -67,6 +67,48 @@ export type {
   InpaintOptions,
 } from "./useInpaint";
 
+export { useStudioShot } from "./useStudioShot";
+export type {
+  UseStudioShotOptions,
+  UseStudioShotResult,
+  StudioShotOptions,
+} from "./useStudioShot";
+
+export { useSmartCrop } from "./useSmartCrop";
+export type {
+  UseSmartCropOptions,
+  UseSmartCropResult,
+  SmartCropOptions,
+} from "./useSmartCrop";
+
+export { useSticker } from "./useSticker";
+export type {
+  UseStickerOptions,
+  UseStickerResult,
+  StickerOptions,
+} from "./useSticker";
+
+export { useOutline } from "./useOutline";
+export type {
+  UseOutlineOptions,
+  UseOutlineResult,
+  OutlineOptions,
+} from "./useOutline";
+
+export { useCompare } from "./useCompare";
+export type {
+  UseCompareOptions,
+  UseCompareResult,
+  CompareOptions,
+} from "./useCompare";
+
+export { useMask } from "./useMask";
+export type {
+  UseMaskOptions,
+  UseMaskResult,
+  MaskOptions,
+} from "./useMask";
+
 export {
   DEFAULT_BASE_URL,
   KnockoutError,
@@ -82,6 +124,12 @@ export {
   callColorize,
   callSilhouette,
   callInpaint,
+  callStudioShot,
+  callSmartCrop,
+  callSticker,
+  callOutline,
+  callCompare,
+  callMask,
 } from "./client";
 export type {
   KnockoutConfig,
@@ -100,4 +148,10 @@ export type {
   SilhouetteInput,
   InpaintInput,
   InpaintBbox,
+  StudioShotInput,
+  SmartCropInput,
+  StickerInput,
+  OutlineInput,
+  CompareInput,
+  MaskInput,
 } from "./client";
