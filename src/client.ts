@@ -63,6 +63,8 @@ export interface FaceRestoreInput {
   file: File | Blob;
   /** Restore only the most prominent face (faster). */
   onlyCenterFace?: boolean;
+  /** Also upscale the background 2x via Real-ESRGAN. Default false (bg preserved as-is). */
+  bgEnhance?: boolean;
   format?: OpaqueFormat;
 }
 
@@ -409,6 +411,9 @@ export async function callFaceRestore(
   form.append("file", input.file, filename);
   if (input.onlyCenterFace !== undefined) {
     form.append("only_center_face", input.onlyCenterFace ? "true" : "false");
+  }
+  if (input.bgEnhance !== undefined) {
+    form.append("bg_enhance", input.bgEnhance ? "true" : "false");
   }
   form.append("format", input.format ?? "png");
 
