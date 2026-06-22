@@ -142,6 +142,10 @@ export interface StudioShotInput {
   shadow?: boolean;
   /** Keep a transparent background. Ignores bgColor & shadow; output is PNG (jpg coerced). */
   transparent?: boolean;
+  /** Apply a subtle brightness + saturation lift to the subject for ecommerce-ready output. Default false. */
+  enhance?: boolean;
+  /** Enhance strength, 0.0–0.5. Default 0.15 (subtle). Only applies when enhance is true. */
+  enhanceStrength?: number;
   format?: OpaqueFormat;
 }
 
@@ -504,6 +508,10 @@ export async function callStudioShot(
   if (input.shadow !== undefined) form.append("shadow", input.shadow ? "true" : "false");
   if (input.transparent !== undefined) {
     form.append("transparent", input.transparent ? "true" : "false");
+  }
+  if (input.enhance !== undefined) form.append("enhance", input.enhance ? "true" : "false");
+  if (input.enhanceStrength !== undefined) {
+    form.append("enhance_strength", String(input.enhanceStrength));
   }
   form.append("format", input.format ?? "jpg");
 

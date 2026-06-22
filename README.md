@@ -232,9 +232,10 @@ const { generate, dataUrl, isLoading } = useStudioShot();
 
 await generate(file, { aspect: "1:1" });
 await generate(file, { transparent: true }); // transparent PNG
+await generate(file, { enhance: true });     // brightness + saturation lift
 ```
 
-**`generate(file, options?)`** — `{ bgColor?, aspect?, padding?, shadow?, transparent?, format?: "png" | "webp" | "jpg" }`
+**`generate(file, options?)`** — `{ bgColor?, aspect?, padding?, shadow?, transparent?, enhance?, enhanceStrength?, format?: "png" | "webp" | "jpg" }`
 
 ### `useSmartCrop(options?)` — v0.3.0
 
