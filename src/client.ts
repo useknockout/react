@@ -149,6 +149,20 @@ export interface StudioShotInput {
   format?: OpaqueFormat;
 }
 
+export type CollagePosition = "TL" | "T" | "TR" | "L" | "C" | "R" | "BL" | "B" | "BR";
+
+export interface CollageInput {
+  /** 2–9 images. First is the main unless mainIndex is set. */
+  files: (File | Blob)[];
+  mainIndex?: number;
+  /** Hero anchor. Default "BR". */
+  mainPosition?: CollagePosition;
+  bgColor?: string;
+  aspect?: string;
+  padding?: number;
+  format?: OpaqueFormat;
+}
+
 export interface SmartCropInput {
   file: File | Blob;
   /** Padding around the subject bbox, in pixels. Default 24. */
@@ -235,14 +249,14 @@ function buildHeaders(config: KnockoutConfig): Record<string, string> {
 async function request(
   config: KnockoutConfig,
   path: string,
-  init: { method: "GET" | "POST"; headers?: Record<string, string>; body?: BodyInit }
+  init: { method: "GET" | "POST"; headers?: Record<string, string>; body?: BodyInit; timeoutMs?: number }
 ): Promise<Response> {
   const baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
   const url = `${baseUrl}${path}`;
   const fetchImpl = resolveFetch(config);
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), config.timeoutMs ?? 60_000);
+  const timer = setTimeout(() => controller.abort(), init.timeoutMs ?? config.timeoutMs ?? 60_000);
 
   try {
     return await fetchImpl(url, {
@@ -516,6 +530,36 @@ export async function callStudioShot(
   form.append("format", input.format ?? "jpg");
 
   const res = await request(config, "/studio-shot", { method: "POST", body: form });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return await res.blob();
+}
+
+/**
+ * Product collage — 2–9 background-removed photos laid out around a main image.
+ * Paid tiers only; billed at N base-image units.
+ */
+export async function callCollage(
+  config: KnockoutConfig,
+  input: CollageInput
+): Promise<Blob> {
+  if (input.files.length < 2 || input.files.length > 9) {
+    throw new Error("collage requires 2-9 files");
+  }
+  const form = new FormData();
+  input.files.forEach((f, i) => {
+    const name = f instanceof File ? f.name : `image-${i}`;
+    form.append("files", f, name);
+  });
+  if (input.mainIndex !== undefined) form.append("main_index", String(input.mainIndex));
+  if (input.mainPosition) form.append("main_position", input.mainPosition);
+  if (input.bgColor) form.append("bg_color", input.bgColor);
+  if (input.aspect) form.append("aspect", input.aspect);
+  if (input.padding !== undefined) form.append("padding", String(input.padding));
+  form.append("format", input.format ?? "jpg");
+
+  // N model passes + possible cold start exceeds the 60s single-image default.
+  const timeoutMs = 45_000 + input.files.length * 20_000;
+  const res = await request(config, "/collage", { method: "POST", body: form, timeoutMs });
   if (!res.ok) throw new KnockoutError(res.status, await res.text());
   return await res.blob();
 }

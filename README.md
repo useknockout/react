@@ -1,3 +1,8 @@
+---
+project: projects/useknockout-react
+type: readme
+---
+
 <div align="center">
 
   # 🥊 @useknockout/react
@@ -167,25 +172,32 @@ Removes the background and composites the subject onto a new background.
 
 ### `useHeadshot(options?)` — v0.4.0
 
-Studio-quality professional headshot — background removed, neutral studio backdrop, optional drop shadow, smart bust crop.
+LinkedIn-ready professional headshot — background removed, solid backdrop or blurred background, portrait crop with the subject centered and configurable headroom.
 
 ```tsx
 const { headshot, dataUrl, isLoading } = useHeadshot();
 
-await headshot({ file, bgColor: "#f5f5f5", crop: "bust" });
+await headshot({ file, bgColor: "#f5f5f5", aspect: "4:5" });
+await headshot({ file, bgBlur: true, blurRadius: 24 }); // blurred bg instead of solid color
 ```
 
-**`input` shape:** `{ file, bgColor?, addShadow?, crop?: "bust" | "head" | "full", format? }`
+**`input` shape:** `{ file, bgColor?, bgBlur?, blurRadius?, aspect?, padding?, headTopRatio?, format? }`
+
+- `aspect` — output aspect `"W:H"`. Default `"4:5"` portrait.
+- `headTopRatio` — vertical headroom `0–0.5`. Default `0.18`.
+- Default `format` is `jpg`.
 
 ### `usePreview(options?)` — v0.4.0
 
-Cheap, fast low-res preview (~1.5s, 512px max). Use for thumbnail UI before triggering full-res request.
+Cheap, fast low-res preview cutout (~80ms warm). Skips refinement and downscales the input — use for thumbnail UI before triggering the full-res request.
 
 ```tsx
 const { preview, dataUrl, isLoading } = usePreview();
 
-await preview({ file, maxSize: 512, watermark: false });
+await preview({ file, maxDim: 512 });
 ```
+
+**`input` shape:** `{ file, maxDim?, format?: "png" | "webp" }` — `maxDim` is the long-edge cap, `64–1024`, default `512`.
 
 ### `useStats(options?)` — v0.4.0
 
@@ -207,9 +219,10 @@ const { upscale, dataUrl, isLoading } = useUpscale();
 
 await upscale({ file, scale: 4 });
 await upscale({ file, scale: 4, model: "realesrgan" });
+await upscale({ file, scale: 4, faceEnhance: true }); // route through GFPGAN (implies realesrgan)
 ```
 
-**`input` shape:** `{ file, scale?: 2 | 4, model?: "swin2sr" | "realesrgan", format?: "png" | "webp" | "jpg" }`
+**`input` shape:** `{ file, scale?: 2 | 4, model?: "swin2sr" | "realesrgan", faceEnhance?, format?: "png" | "webp" | "jpg" }` — `scale` defaults to `4`.
 
 ### `useFaceRestore(options?)` — v0.5.0
 
@@ -219,9 +232,62 @@ await upscale({ file, scale: 4, model: "realesrgan" });
 const { faceRestore, dataUrl, isLoading } = useFaceRestore();
 
 await faceRestore({ file });
+await faceRestore({ file, onlyCenterFace: true, bgEnhance: true });
 ```
 
-**`input` shape:** `{ file, format?: "png" | "webp" | "jpg" }`
+**`input` shape:** `{ file, onlyCenterFace?, bgEnhance?, format?: "png" | "webp" | "jpg" }`
+
+- `onlyCenterFace` — restore only the most prominent face (faster).
+- `bgEnhance` — also upscale the background 2x via Real-ESRGAN. Default `false` (background preserved as-is).
+
+### `useColorize(options?)` — v0.7.0
+
+**DDColor (Apache-2.0) image colorization.** Predicts plausible color from grayscale luminance in a single feed-forward pass (~500ms warm). Works on black-and-white or color input.
+
+```tsx
+const { colorize, dataUrl, isLoading } = useColorize();
+
+await colorize(file);
+```
+
+**`colorize(file, options?)`** — `{ format?: "png" | "webp" | "jpg" }`
+
+### `useSilhouette(options?)` — v0.7.0
+
+**Two-tone silhouette portrait** — the subject rendered in one solid color, the background in another.
+
+```tsx
+const { silhouette, dataUrl, isLoading } = useSilhouette();
+
+await silhouette(file, { subjectColor: "#1E2960", bgColor: "#F0857C" });
+```
+
+**`silhouette(file, options?)`** — `{ subjectColor?, bgColor?, format?: "png" | "webp" | "jpg" }`
+
+- `subjectColor` — hex color for the subject. Default `"#7C3AED"`.
+- `bgColor` — hex color for the background. Default `"#FFFFFF"`.
+
+### `useInpaint(options?)` — v0.7.0
+
+**LaMa-based inpainting.** Erase part of an image and fill the hole convincingly. Three modes are auto-detected from what you pass:
+
+```tsx
+const { inpaint, dataUrl, isLoading } = useInpaint();
+
+// 1. Auto-erase subject (BiRefNet subject mask, inverted) — drop in a photo, subject is erased:
+await inpaint(file);
+
+// 2. Erase a rectangular region:
+await inpaint(file, { bbox: { x: 100, y: 100, w: 300, h: 400 } });
+
+// 3. Erase a custom mask (white = inpaint, black = keep):
+await inpaint(file, { mask: maskBlob });
+```
+
+**`inpaint(file, options?)`** — `{ mask?, bbox?: { x, y, w, h }, dilation?, format?: "png" | "webp" | "jpg" }`
+
+- `mask` and `bbox` are mutually exclusive.
+- `dilation` — mask dilation in pixels. Default `8`, range `0–32`.
 
 ### `useStudioShot(options?)` — v0.3.0
 
@@ -398,6 +464,23 @@ export function RemoveBgDropzone() {
 ```
 
 ---
+
+## Project structure
+
+```
+src/
+  index.ts              Public entry — re-exports every hook, the provider, the client, and all types
+  client.ts             Zero-dep browser HTTP client (callRemove, callReplaceBackground, …) + KnockoutError + KnockoutConfig
+  KnockoutProvider.ts   React context provider + useKnockoutConfig (merges provider config with per-hook overrides)
+  useRemoveBackground.ts
+  useReplaceBackground.ts
+  useHeadshot.ts        useColorize.ts    useSilhouette.ts   useInpaint.ts
+  usePreview.ts         useUpscale.ts     useFaceRestore.ts  useStats.ts
+  useStudioShot.ts      useSmartCrop.ts   useSticker.ts      useOutline.ts
+  useCompare.ts         useMask.ts
+```
+
+Every image hook follows the same shape: it calls `useKnockoutConfig` to resolve config, manages `data` / `dataUrl` / `isLoading` / `error` state, auto-revokes the previous object URL on each call and on unmount, and exposes a trigger plus `reset`. Built with **tsup** to dual ESM + CJS with `.d.ts` types; `react`/`react-dom` are externalized.
 
 ## Framework notes
 

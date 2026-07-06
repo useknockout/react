@@ -74,6 +74,13 @@ export type {
   StudioShotOptions,
 } from "./useStudioShot";
 
+export { useCollage } from "./useCollage";
+export type {
+  UseCollageOptions,
+  UseCollageResult,
+  CollageOptions,
+} from "./useCollage";
+
 export { useSmartCrop } from "./useSmartCrop";
 export type {
   UseSmartCropOptions,
@@ -149,6 +156,8 @@ export type {
   InpaintInput,
   InpaintBbox,
   StudioShotInput,
+  CollageInput,
+  CollagePosition,
   SmartCropInput,
   StickerInput,
   OutlineInput,
