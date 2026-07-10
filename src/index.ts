@@ -81,6 +81,13 @@ export type {
   CollageOptions,
 } from "./useCollage";
 
+export { useVideoRemove } from "./useVideoRemove";
+export type {
+  UseVideoRemoveOptions,
+  UseVideoRemoveResult,
+  VideoRemoveOptions,
+} from "./useVideoRemove";
+
 export { useSmartCrop } from "./useSmartCrop";
 export type {
   UseSmartCropOptions,
@@ -158,6 +165,9 @@ export type {
   StudioShotInput,
   CollageInput,
   CollagePosition,
+  VideoRemoveInput,
+  VideoJob,
+  VideoFormat,
   SmartCropInput,
   StickerInput,
   OutlineInput,

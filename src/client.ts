@@ -564,6 +564,52 @@ export async function callCollage(
   return await res.blob();
 }
 
+export type VideoFormat = "prores4444" | "webm" | "mp4";
+
+export interface VideoRemoveInput {
+  /** mp4, mov, avi, webm, or mkv. Max 30 seconds / 200MB. */
+  file: File | Blob;
+  /** prores4444 (MOV, real alpha) | webm (VP9 alpha) | mp4 (requires bgColor). */
+  format?: VideoFormat;
+  bgColor?: string;
+  /** 0–100 temporal alpha smoothing. Default 30. */
+  smoothing?: number;
+}
+
+export interface VideoJob {
+  job_id: string;
+  status: "queued" | "processing" | "done" | "error";
+  progress: number;
+  seconds?: number;
+  frames?: number;
+  result_url?: string;
+  error?: string;
+}
+
+/** Submit a video for background removal. Returns the job descriptor; poll with callGetJob. */
+export async function callVideoRemove(
+  config: KnockoutConfig,
+  input: VideoRemoveInput
+): Promise<VideoJob> {
+  const form = new FormData();
+  const filename = input.file instanceof File ? input.file.name : "clip.mp4";
+  form.append("file", input.file, filename);
+  if (input.format) form.append("format", input.format);
+  if (input.bgColor) form.append("bg_color", input.bgColor);
+  if (input.smoothing !== undefined) form.append("smoothing", String(input.smoothing));
+  // Uploads up to 200MB — give the submit real headroom.
+  const res = await request(config, "/video/remove", { method: "POST", body: form, timeoutMs: 300_000 });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return (await res.json()) as VideoJob;
+}
+
+/** Poll a video job once. */
+export async function callGetJob(config: KnockoutConfig, jobId: string): Promise<VideoJob> {
+  const res = await request(config, `/jobs/${jobId}`, { method: "GET" });
+  if (!res.ok) throw new KnockoutError(res.status, await res.text());
+  return (await res.json()) as VideoJob;
+}
+
 /**
  * Auto-crop to the subject bounding box + padding. Transparent cutout by default.
  */
